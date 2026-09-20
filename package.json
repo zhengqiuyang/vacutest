@@ -10,7 +10,7 @@
   "main": "dist/src/detect.js",
   "types": "dist/src/detect.d.ts",
   "files": [
-    "dist",
+    "dist/src",
     "fixtures",
     "scripts",
     "README.md",

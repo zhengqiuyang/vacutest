@@ -127,6 +127,31 @@ test('TAUTOLOGY fires on bare a === a comparisons', () => {
   assert.deepEqual(rules(`test('a', () => { if (a === a) { expect(add(1, 1)).toBe(2); } });`), ['TAUTOLOGY_LITERAL']);
 });
 
+test('TAUTOLOGY evidence quotes the real comparison (no offset garbling)', () => {
+  const findings = detectInSource(
+    `test('a', () => { const ok = flag === flag; expect(ok).toBe(true); });`,
+    'inline.test.js',
+  ).findings;
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0]?.rule, 'TAUTOLOGY_LITERAL');
+  assert.ok(findings[0]?.evidence.includes('flag === flag'), `evidence: ${findings[0]?.evidence}`);
+});
+
+test('TAUTOLOGY does not fire on self-comparison text inside another block\'s string fixture', () => {
+  // Found by self-scanning our own meta-test suite (276 false hits): the bare-
+  // comparison regex used to run over full-file blanked text, so fixture strings
+  // in OTHER test blocks (not blanked for this block's scan) matched and were
+  // attributed to whichever block was being analyzed.
+  const src = [
+    `test('first', () => { expect(add(1, 1)).toBe(2); });`,
+    `test('second', () => {`,
+    `  const fixture = \`test('inner', () => { if (a === a) { expect(1).toBe(1); } });\`;`,
+    `  expect(fixture.length).toBeGreaterThan(0);`,
+    `});`,
+  ].join('\n');
+  assert.deepEqual(rules(src), []);
+});
+
 test('TAUTOLOGY does not fire on expect(a).toBe(b)', () => {
   assert.deepEqual(rules(`test('a', () => { const a = 1; const b = 1; expect(a).toBe(b); });`), []);
 });

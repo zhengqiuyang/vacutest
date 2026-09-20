@@ -766,6 +766,7 @@ function findTautologies(
   assertions: Assertion[],
   blanked: string,
   bodyStart: number,
+  bodyEnd: number,
 ): TautologyHit[] {
   const hits: TautologyHit[] = [];
 
@@ -840,11 +841,17 @@ function findTautologies(
   }
 
   // Bare identical-operand comparisons: `a === a`, `x == x`, `1 == 1`, `true === true`.
-  // Searched on comment/string-blanked text so literals in strings never match.
+  // Searched on comment/string/template/regex-blanked text (full file, offsets
+  // preserved) so literals in strings never match — but the blanking above only
+  // covers THIS block's tokens, so gate matches to the block's char range and
+  // use absolute offsets. Found by self-scanning our own meta-test suite: the
+  // loop used to accept full-file matches (fixture strings in OTHER blocks
+  // survived blanking) and double-added bodyStart, garbling the evidence.
   const re = /(?<![\w$.])([\w$]+)\s*[=!]==?\s*(?<![\w$.])\1\b/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(blanked)) !== null) {
-    const start = bodyStart + m.index;
+    if (m.index < bodyStart || m.index >= bodyEnd) continue;
+    const start = m.index;
     hits.push({
       start,
       end: start + m[0].length,
@@ -953,7 +960,7 @@ function analyzeCall(
 
   // --- TAUTOLOGY_LITERAL ---
   const blanked = blankedBody(src, tokens, s, e);
-  const tautologies = findTautologies(assertions, blanked, call.bodyStart);
+  const tautologies = findTautologies(assertions, blanked, call.bodyStart, call.bodyEnd);
   for (const hit of tautologies) {
     findings.push({
       test: call.name ?? '(anonymous)',
