@@ -1,0 +1,3 @@
+testGlobs: "not-an-array"
+unknownOption: true
+ignoreWeakOnly: "yes"

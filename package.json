@@ -1,0 +1,47 @@
+{
+  "name": "vacutest",
+  "version": "0.1.0",
+  "description": "Detect vacuous AI-written tests that can never fail — deterministic pre-gate before mutation testing",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "vacutest": "dist/src/cli.js"
+  },
+  "main": "dist/src/detect.js",
+  "types": "dist/src/detect.d.ts",
+  "files": [
+    "dist",
+    "fixtures",
+    "scripts",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node run-tests.mjs",
+    "demo": "node scripts/demo.mjs",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "testing",
+    "ai-agents",
+    "code-quality",
+    "tautological-tests",
+    "vacuous-tests",
+    "ci"
+  ],
+  "dependencies": {
+    "yaml": "^2.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhengqiuyang/vacutest.git"
+  }
+}
